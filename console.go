@@ -6,7 +6,6 @@ import (
 )
 
 // Token contains the sign-in token for AWS console access
-// The Value is passed with in the url at the time of accessing
 type Token struct {
 	Value     string    `json:"SigninToken"`
 	ExpiresAt time.Time `json:"-"`
@@ -26,6 +25,6 @@ func (t *Token) IsValid() bool {
 }
 
 // SignInURL returns the URL with token included for short time access
-func (t *Token) SignInURL() url.URL {
+func (t *Token) SignInURL() *url.URL {
 	panic("not implemented")
 }
