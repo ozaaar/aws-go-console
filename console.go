@@ -17,26 +17,31 @@ import (
 
 // Console provides the API operation methods for getting sign-in Token
 type Console struct {
-	sts    stsiface.STSAPI
-	client *http.Client
+	STS    stsiface.STSAPI
+	Client HTTPClient
 }
 
-// New creates a new instance of the Console client with a session.
+// New creates a new instance of the Console Client with a session.
 //
 // Example:
 //     mySession := session.Must(session.NewSession())
 //
-//     // Create a Console client from just a session.
+//     // Create a Console Client from just a session.
 //     svc := sts.New(mySession)
 func New(sess *session.Session) *Console {
 	return &Console{
-		sts:    sts.New(sess),
-		client: http.DefaultClient,
+		STS:    sts.New(sess),
+		Client: http.DefaultClient,
 	}
 }
 
 // InvalidTokenError indicates the token value is empty or is expired
 var InvalidTokenError = errors.New("invalid token")
+
+// HTTPClient minimal interface for an HTTP client
+type HTTPClient interface {
+	Do(req *http.Request) (*http.Response, error)
+}
 
 // Token contains the sign-in token for AWS console access
 type Token struct {
@@ -44,6 +49,7 @@ type Token struct {
 	ExpiresAt time.Time `json:"-"`
 }
 
+// credentials used as payload for getting sign-in token
 type credentials struct {
 	SessionID    string `json:"sessionId"`
 	SessionKey   string `json:"sessionKey"`
@@ -58,8 +64,8 @@ func (t *Token) IsValid() bool {
 	return false
 }
 
-// SignInURL returns the URL with a valid token, can be opened in
-// the browser to access AWS console with dst used as location
+// SignInURL returns the URL with a valid token, can be opened directly in the browser
+// dst is the AWS console location to be opened e.g https://console.aws.amazon.com/sns
 func (t *Token) SignInURL(dst string) (*url.URL, error) {
 	if !t.IsValid() {
 		return nil, InvalidTokenError
@@ -84,6 +90,8 @@ func (t *Token) SignInURL(dst string) (*url.URL, error) {
 }
 
 // SignInTokenWithArn gets token from AWS API via GetFederationToken
+// name is the name for AWS console user
+// arn is the managed permission ARN for AWS console user
 func (c *Console) SignInTokenWithArn(name, arn *string) (*Token, error) {
 	input := sts.GetFederationTokenInput{
 		Name:       name,
@@ -95,7 +103,7 @@ func (c *Console) SignInTokenWithArn(name, arn *string) (*Token, error) {
 
 // signInToken returns token against given credentials
 func (c *Console) signInToken(input sts.GetFederationTokenInput) (*Token, error) {
-	output, err := c.sts.GetFederationToken(&input)
+	output, err := c.STS.GetFederationToken(&input)
 	if err != nil {
 		return nil, fmt.Errorf("getting federation token: %w", err)
 	}
@@ -121,7 +129,7 @@ func (c *Console) signInToken(input sts.GetFederationTokenInput) (*Token, error)
 		return nil, fmt.Errorf("creating http request: %w", err)
 	}
 
-	tokenResponse, err := c.client.Do(tokenRequest)
+	tokenResponse, err := c.Client.Do(tokenRequest)
 	defer tokenResponse.Body.Close()
 	if err != nil {
 		return nil, fmt.Errorf("getting token response: %w", err)
