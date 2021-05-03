@@ -35,8 +35,8 @@ func New(sess *session.Session) *Console {
 	}
 }
 
-// InvalidTokenError indicates the token value is empty or is expired
-var InvalidTokenError = errors.New("invalid token")
+// ErrInvalidToken indicates the token value is empty or is expired
+var ErrInvalidToken = errors.New("invalid token")
 
 // HTTPClient minimal interface for an HTTP client
 type HTTPClient interface {
@@ -68,7 +68,7 @@ func (t *Token) IsValid() bool {
 // dst is the AWS console location to be opened e.g https://console.aws.amazon.com/sns
 func (t *Token) SignInURL(dst string) (*url.URL, error) {
 	if !t.IsValid() {
-		return nil, InvalidTokenError
+		return nil, ErrInvalidToken
 	}
 
 	if _, err := url.ParseRequestURI(dst); err != nil {
