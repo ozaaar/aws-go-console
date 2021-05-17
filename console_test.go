@@ -143,8 +143,8 @@ func TestConsole_SignInTokenWithArn(t *testing.T) {
 		Client HTTPClient
 	}
 	type args struct {
-		name *string
-		arn  *string
+		name string
+		arn  string
 	}
 	tests := []struct {
 		name      string
@@ -160,8 +160,8 @@ func TestConsole_SignInTokenWithArn(t *testing.T) {
 				Client: &mockedHTTPClient{},
 			},
 			args: args{
-				name: aws.String("foo"),
-				arn:  aws.String("bar"),
+				name: "foo",
+				arn:  "bar",
 			},
 			wantValue: "very secret token",
 			wantErr:   false,

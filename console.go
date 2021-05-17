@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/aws/aws-sdk-go/aws"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -92,10 +93,10 @@ func (t *Token) SignInURL(dst string) (*url.URL, error) {
 // SignInTokenWithArn gets token from AWS API via GetFederationToken
 // name is the name for AWS console user
 // arn is the managed permission ARN for AWS console user
-func (c *Console) SignInTokenWithArn(name, arn *string) (*Token, error) {
+func (c *Console) SignInTokenWithArn(name, arn string) (*Token, error) {
 	input := sts.GetFederationTokenInput{
-		Name:       name,
-		PolicyArns: []*sts.PolicyDescriptorType{{Arn: arn}},
+		Name:       aws.String(name),
+		PolicyArns: []*sts.PolicyDescriptorType{{Arn: aws.String(arn)}},
 	}
 
 	return c.signInToken(input)
@@ -140,7 +141,7 @@ func (c *Console) signInToken(input sts.GetFederationTokenInput) (*Token, error)
 		return nil, fmt.Errorf("reading token resposne: %w", err)
 	}
 
-	token := Token{ExpiresAt: time.Now()}
+	token := Token{ExpiresAt: time.Now().Add(time.Minute * 15)}
 	err = json.Unmarshal(tokenResponseBody, &token)
 	if err != nil {
 		return nil, fmt.Errorf("unmarshalling token: %w", err)
