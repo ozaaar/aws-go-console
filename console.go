@@ -28,7 +28,7 @@ type Console struct {
 //     mySession := session.Must(session.NewSession())
 //
 //     // Create a Console Client from just a session.
-//     svc := sts.New(mySession)
+//     con := console.New(mySession)
 func New(sess *session.Session) *Console {
 	return &Console{
 		STS:    sts.New(sess),

@@ -22,6 +22,6 @@ token, _ := con.SignInTokenWithArn("example", "arn:aws:iam::aws:policy/AmazonEC2
 url, _ := token.SignInURL("https://console.aws.amazon.com/ecr")
 ```
 
-with running example as follow:
+with running example as follows:
 
 [![Console Example](https://img.youtube.com/vi/0wdf8jhNhDE/0.jpg)](https://www.youtube.com/watch?v=0wdf8jhNhDE)
